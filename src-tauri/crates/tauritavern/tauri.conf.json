@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "TauriTavern",
-  "version": "2.2.0",
+  "productName": "SankatSathi",
+  "version": "0.0.1",
   "identifier": "com.tauritavern.client",
   "build": {
     "beforeBuildCommand": {
