@@ -135,31 +135,9 @@ jobs:
             > "$config_path"
           echo "config_path=$config_path" >> "$GITHUB_OUTPUT"
 
-      - name: Setup macOS signing and notarization
-        if: matrix.platform == 'macos-latest'
-        shell: bash
-        env:
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
-        run: ./scripts/ci/setup-macos-signing.sh
+     
 
-      - name: Build desktop bundles
-        uses: tauri-apps/tauri-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_API_ISSUER: ${{ matrix.platform == 'macos-latest' && secrets.APPLE_API_ISSUER || '' }}
-          APPLE_API_KEY: ${{ matrix.platform == 'macos-latest' && secrets.APPLE_API_KEY || '' }}
-        with:
-          projectPath: src-tauri/crates/tauritavern
-          tauriScript: node ../../../scripts/tauri-app.mjs
-          args: ${{ startsWith(matrix.platform, 'ubuntu-22.04') && format('{0} --config {1}', matrix.target_args, steps.linux-version.outputs.config_path) || matrix.target_args }}
-          uploadWorkflowArtifacts: true
-          uploadUpdaterJson: false
-          uploadUpdaterSignatures: false
-          workflowArtifactNamePattern: 'TauriTavern-${{ needs.prepare.outputs.asset_time }}-canary-[platform]-[arch]-[bundle]'
+      
 
       - name: Build portable binary
         if: matrix.portable
@@ -257,15 +235,7 @@ jobs:
             echo "bundle_version=$bundle_version"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Setup Android signing
-        if: matrix.mobile == 'android'
-        shell: bash
-        run: |
-          cd src-tauri/crates/tauritavern/gen/android
-          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" > keystore.properties
-          echo "password=${{ secrets.ANDROID_KEY_PASSWORD }}" >> keystore.properties
-          base64 -d <<< "${{ secrets.ANDROID_KEY_BASE64 }}" > "$RUNNER_TEMP/keystore.jks"
-          echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
+
 
       - name: Setup App Store Connect API key
         if: matrix.mobile == 'ios'
@@ -297,7 +267,7 @@ jobs:
           projectPath: src-tauri/crates/tauritavern
           tauriScript: node ../../../scripts/tauri-app.mjs
           mobile: ${{ matrix.mobile }}
-          args: ${{ matrix.args }}
+          args: ${{ matrix.args }} --debug
           uploadWorkflowArtifacts: true
           uploadPlainBinary: true
           uploadUpdaterJson: false
